@@ -83,12 +83,12 @@ public class Robot extends IterativeRobot {
 		// Drive with left stick, y = forward/backward, x = rotation
 		double driveSpeed = deadband(joystickDrive.getY(Hand.kLeft));
 		double driveRot = deadband(joystickDrive.getX(Hand.kLeft));
-		drive.arcadeDrive(driveSpeed, driveRot);
+		drive.arcadeDrive(-(driveSpeed/2), driveRot/2);
 		
-		System.out.print("Drive speed: ");
+		/*System.out.print("Drive speed: ");
 		System.out.print(driveSpeed);
 		System.out.print("\tDrive rotation: ");
-		System.out.println(driveRot);
+		System.out.println(driveRot);*/
 	}
 
 	/**
