@@ -8,8 +8,11 @@
 package org.usfirst.frc.team3196.robot;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.SpeedControllerGroup;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.GenericHID.Hand;
+import com.ctre.phoenix.motorcontrol.can.*;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -19,22 +22,37 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * project.
  */
 public class Robot extends IterativeRobot {
-	private static final String kDefaultAuto = "Default";
-	private static final String kCustomAuto = "My Auto";
-	private String m_autoSelected;
-	private SendableChooser<String> m_chooser = new SendableChooser<>();
+	public Joystick joystickDrive = new Joystick(0);
 
+	// Right side
+	public WPI_TalonSRX tFrontRight = new WPI_TalonSRX(4);
+	public WPI_TalonSRX tRearRight = new WPI_TalonSRX(2);
+	public SpeedControllerGroup dRight = new SpeedControllerGroup(tFrontRight, tRearRight);
+	
+	// Left side
+	public WPI_TalonSRX tFrontLeft = new WPI_TalonSRX(3);
+	public WPI_TalonSRX tRearLeft = new WPI_TalonSRX(1);
+	public SpeedControllerGroup dLeft = new SpeedControllerGroup(tFrontLeft, tRearLeft);
+	
+	public DifferentialDrive drive = new DifferentialDrive(dLeft, dRight);
+	
+	// Simple deadband method, ignores >-0.05 and <0.05
+	public double deadband(double val) {
+		if(val > -0.05 && val < 0.05) return 0;
+		return val;
+	}
+	
+	
+	
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
 	 */
 	@Override
 	public void robotInit() {
-		m_chooser.addDefault("Default Auto", kDefaultAuto);
-		m_chooser.addObject("My Auto", kCustomAuto);
-		SmartDashboard.putData("Auto choices", m_chooser);
 	}
 
+	
 	/**
 	 * This autonomous (along with the chooser code above) shows how to select
 	 * between different autonomous modes using the dashboard. The sendable
@@ -48,10 +66,6 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousInit() {
-		m_autoSelected = m_chooser.getSelected();
-		// autoSelected = SmartDashboard.getString("Auto Selector",
-		// defaultAuto);
-		System.out.println("Auto selected: " + m_autoSelected);
 	}
 
 	/**
@@ -59,15 +73,6 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
-		switch (m_autoSelected) {
-			case kCustomAuto:
-				// Put custom auto code here
-				break;
-			case kDefaultAuto:
-			default:
-				// Put default auto code here
-				break;
-		}
 	}
 
 	/**
@@ -75,6 +80,15 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
+		// Drive with left stick, y = forward/backward, x = rotation
+		double driveSpeed = deadband(joystickDrive.getY(Hand.kLeft));
+		double driveRot = deadband(joystickDrive.getX(Hand.kLeft));
+		drive.arcadeDrive(driveSpeed, driveRot);
+		
+		System.out.print("Drive speed: ");
+		System.out.print(driveSpeed);
+		System.out.print("\tDrive rotation: ");
+		System.out.println(driveRot);
 	}
 
 	/**
