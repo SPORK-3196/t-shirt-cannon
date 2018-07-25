@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import com.ctre.phoenix.motorcontrol.can.*;
 
@@ -36,6 +37,8 @@ public class Robot extends IterativeRobot {
 	
 	public DifferentialDrive drive = new DifferentialDrive(dLeft, dRight);
 	
+	public double thrustLimiter = 0.7;
+	
 	// Simple deadband method, ignores >-0.05 and <0.05
 	public double deadband(double val) {
 		if(val > -0.05 && val < 0.05) return 0;
@@ -50,6 +53,8 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void robotInit() {
+		// Init dashboard with thrustLimiter field
+		SmartDashboard.putNumber("thrustLimiter", 70);
 	}
 
 	
@@ -80,10 +85,13 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
+		// Read thrustLimiter value from dashboard
+		thrustLimiter = ((double)SmartDashboard.getNumber("thrustLimiter", 70))/100.0;
+		
 		// Drive with left stick, y = forward/backward, x = rotation
 		double driveSpeed = deadband(joystickDrive.getY(Hand.kLeft));
 		double driveRot = deadband(joystickDrive.getX(Hand.kLeft));
-		drive.arcadeDrive(-(driveSpeed/2), driveRot/2);
+		drive.arcadeDrive(-(driveSpeed*thrustLimiter), (driveRot*thrustLimiter));
 		
 		/*System.out.print("Drive speed: ");
 		System.out.print(driveSpeed);
